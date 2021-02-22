@@ -13,27 +13,44 @@ data = b'secure communication for social network'
 print(data.hex())
 
 class Node:
-    def __init__(self, edges=None, k):
-        if edges is None:
-            edges = []
-
+    def __init__(self, children=None,parent=None, k):
+        if children is None:
+            children = []
+        else:
+            self.children = children
+        self.parent = parent
         self.k = k
-
+        self.sessionKeys = []
     x = get_random_bytes(128)
     A = pow(g, x, p)
-
-    def populateEdges(E):
-        edges.append(E)
-
+    def recieveKey(self,key):
+        self.sessionKeys.append(key) 
+    def sendKey(self,key):
+            self.parent.recieveKey(key)
+    def populateChildren(self,E):
+        children.append(E)
+    def get_rev_children(self):
+        children = self.children[:]
+        children.reverse()
+        return children      
 # Encrypt the entire data
-    def encrypt():
+    def encrypt(self):
         cipher = AES.new(key, AES.MODE_CBC, iv)
         ciphertext = cipher.encrypt(Padding.pad(data, 16))
         print("Ciphertext: {0}\n".format(ciphertext.hex()))
 
 # Decrypt the ciphertext
-    def decrypt():
+    def decrypt(self):
         cipher = AES.new(key, AES.MODE_CBC, iv)
         plaintext = cipher.decrypt(ciphertext)
         print("Plaintext: {0}".format(Padding.unpad(plaintext, 16)))
-        
+    def calculateOwnKey(self):
+        pass    
+    def calculatekeys(self):
+        if len(self.children) == len(self.sessionKeys):
+            for index,key in self.sessionKeys:
+                result = result ^ key
+            result = result ^ self.calculateOwnKey() 
+            return result
+        else:
+            return 0
