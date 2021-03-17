@@ -1,56 +1,51 @@
 #!/usr/bin/python3
 
-from Crypto.Cipher import AES
-from Crypto.Util import Padding
-from Crypto.Random import get_random_bytes
-from hashlib import sha256
+import socket
+import threading
 
-# Here is the Diffie-Hellman computation
-p = 0xFFFFFFFFFFFFFFFFC90FDAA22168C234C4C6628B80DC1CD129024E088A67CC74020BBEA63B139B22514A08798E3404DDEF9519B3CD3A431B302B0A6DF25F14374FE1356D6D51C245E485
-g = 2
-iv = get_random_bytes(16)
-data = b'secure communication for social network'
-print(data.hex())
 
 class Node:
-    def __init__(self, children=None,parent=None, k):
-        if children is None:
-            children = []
+    def __init__(self, name, children=None, parent=None):
+        self.name = name
+
+        self.children = []
+        if children is not None:
+            if type(children) is not list: children = [children]
+            for node in children:
+                self.children.append(node)
+
+        if parent is None:
+            self.parent = None
         else:
-            self.children = children
-        self.parent = parent
-        self.k = k
-        self.sessionKeys = []
-    x = get_random_bytes(128)
-    A = pow(g, x, p)
-    def recieveKey(self,key):
-        self.sessionKeys.append(key) 
-    def sendKey(self,key):
-            self.parent.recieveKey(key)
-    def populateChildren(self,E):
-        children.append(E)
+            self.parent = parent
+
+    def populate_children(self, node):
+        self.children.append(node)
+
+    def populate_parent(self, node):
+        self.parent = node
+
     def get_rev_children(self):
         children = self.children[:]
         children.reverse()
-        return children      
-# Encrypt the entire data
-    def encrypt(self):
-        cipher = AES.new(key, AES.MODE_CBC, iv)
-        ciphertext = cipher.encrypt(Padding.pad(data, 16))
-        print("Ciphertext: {0}\n".format(ciphertext.hex()))
+        return children
 
-# Decrypt the ciphertext
-    def decrypt(self):
-        cipher = AES.new(key, AES.MODE_CBC, iv)
-        plaintext = cipher.decrypt(ciphertext)
-        print("Plaintext: {0}".format(Padding.unpad(plaintext, 16)))
-    def calculateOwnKey(self):
-        pass    
-    def calculatekeys(self):
-        if len(self.children) == len(self.sessionKeys):
-            for index,key in self.sessionKeys:
-                result = result ^ key
-            result = result ^ self.calculateOwnKey() 
-            return result
-        else:
-            return 0
+    # Create Socket connection
+    def create_socket(self):
+        with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as soc:
+
+            if self.children:
+                # get host's name and then IP
+                host_name = socket.gethostname()
+                # host_ip = socket.gethostbyname(host_name)
+
+                host_ip = '127.0.0.1'
+                port = 49152 + int(self.name[-1])
+                soc.bind((host_ip, port))
+                soc.listen()
+                conn, addr = soc.accept()
+                print("Connected with " + str(addr[0]) + ":" + str(addr[1]))
+                while True:
+                    data = conn.recv(1024)
+                    if not data:
+                        break
