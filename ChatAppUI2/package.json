@@ -1,0 +1,14 @@
+{
+  "name": "server",
+  "version": "1.0.0",
+  "description": "simple server for chatapp",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Elnaz and Sadaf",
+  "license": "ISC",
+  "dependencies": {
+    "socket.io": "^4.0.0"
+  }
+}
